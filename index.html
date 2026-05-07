@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jannys</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Dancing+Script&family=Inter:wght@300;400;700&family=Permanent+Marker&family=Rock+Salt&display=swap" rel="stylesheet">
+<style>
+    :root { --pastel-pink: #ffadd2; --pastel-pink-shadow: rgba(255, 173, 210, 0.8); }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+        display: flex; justify-content: center; align-items: center;
+        width: 100vw; height: 100vh;
+        overflow: hidden; background-color: #050505; font-family: 'Inter', sans-serif;
+        -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+        cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffadd2' stroke='white' stroke-width='1.5' d='M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87c.45 0 .67-.54.35-.85L6.35 2.85a.5.5 0 0 0-.85.36z'/%3E%3C/svg%3E") 0 0, auto !important;
+    }
+
+    .sparkle {
+        position: fixed; pointer-events: none; width: 14px; height: 14px; 
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M12 0l2.5 8.5L22 11l-7.5 2.5L12 22l-2.5-8.5L2 11l7.5-2.5z'/%3E%3C/svg%3E");
+        background-size: contain; background-repeat: no-repeat; filter: drop-shadow(0 0 4px var(--pastel-pink));
+        z-index: 99999; animation: fallFades 0.9s ease-out forwards;
+    }
+    @keyframes fallFades { 0% { transform: scale(0.4) rotate(0deg); opacity: 1; } 100% { transform: scale(1.2) rotate(90deg) translateY(25px); opacity: 0; } }
+
+    #bg-video {
+        position: fixed; top: 50%; left: 50%; min-width: 100%; min-height: 100%; width: auto; height: auto;
+        transform: translate(-50%, -50%); object-fit: cover; z-index: -2; opacity: 0.6; filter: hue-rotate(320deg); transition: filter 0.5s ease;
+    }
+
+    .anim-fade { opacity: 0; animation: floatIn 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+    @keyframes floatIn { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+    
+    .float-wrapper { width: 100%; height: 100%; animation: smoothFloat 4s ease-in-out infinite; transform-style: preserve-3d; }
+    @keyframes smoothFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    .pulse-glow { animation: pulseGlow 2s infinite; }
+    @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 5px rgba(255,173,210,0.3); } 50% { box-shadow: 0 0 15px rgba(255,173,210,0.8); } }
+
+    .glass-panel {
+        background-color: rgba(255, 192, 203, 0.15); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.1);
+    }
+    
+    .artboard { width: 1040px; height: 640px; position: relative; transform-origin: center center; }
+    
+    .clickable { 
+        cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffadd2' stroke='white' stroke-width='1.5' d='M10 2a2 2 0 0 1 2 2v4.5l1.5-.5a2 2 0 0 1 2.5 1l1.5 3a2 2 0 0 1 .5 1.5v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-3.5-1.5l-3-4a1 1 0 0 1 1.5-1.5l2 2V4a2 2 0 0 1 2-2z'/%3E%3C/svg%3E") 8 2, pointer !important;
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s;
+    }
+    .clickable:hover { opacity: 0.8; }
+
+    /* SECCIÓN IZQUIERDA */
+    .main-title { position: absolute; left: 50px; top: 110px; line-height: 0.85; pointer-events: none; z-index: 10; display: flex; flex-direction: column; align-items: flex-start; }
+    .title-row { display: flex; align-items: baseline; }
+    .title-nath { font-family: 'Rock Salt', cursive; color: var(--pastel-pink); font-size: 65px; letter-spacing: -2px; text-shadow: none; }
+    .title-exclamation { font-family: 'Permanent Marker', cursive; color: var(--pastel-pink); font-size: 85px; margin-left: 10px; text-shadow: none;}
+    .title-dslade-small { font-family: 'Anton', sans-serif; color: white; font-size: 18px; text-shadow: 0 2px 5px rgba(0,0,0,0.8); letter-spacing: 3px; margin-top: 10px; align-self: flex-end; padding-right: 20px; }
+    
+    .chibi-img {
+        position: absolute; left: 300px; top: 130px; width: 80px; height: 80px; 
+        background: url('https://i.pinimg.com/originals/47/da/32/47da32e5c3ae842e9366074f8a555b05.gif') center/contain no-repeat;
+        transform: rotate(5deg); transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); z-index: 10;
+    }
+    .chibi-img:hover { transform: rotate(0deg) scale(1.15); }
+
+    /* GALERÍA */
+    .gallery-container {
+        position: absolute; left: 40px; top: 250px; width: 310px; height: 190px; border-radius: 20px; padding: 15px; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .gallery-title { font-family: 'Permanent Marker', cursive; color: white; font-size: 18px; letter-spacing: 6px; text-align: center; margin-bottom: 5px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);}
+    .gallery-track { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 0 5px; }
+    
+    .gallery-scroll-viewport {
+        overflow: hidden; width: 230px; padding: 40px 10px; margin: -40px 0; 
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%); 
+        mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+    }
+    .gallery-inner { display: flex; gap: 12px; width: max-content; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+    
+    .pill { 
+        flex: 0 0 45px; height: 90px; background: #444; border-radius: 25px; 
+        background-size: cover; background-position: center; 
+        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); border: 1px solid rgba(255,255,255,0.1); 
+        position: relative; pointer-events: auto;
+    }
+    .pill:hover { transform: scale(1.15); box-shadow: 0 8px 20px var(--pastel-pink-shadow); border-color: var(--pastel-pink); z-index: 15; }
+    .gallery-nav-dots { display: flex; flex-direction: column; gap: 6px; margin-left: auto; }
+    .g-dot { width: 6px; height: 6px; border-radius: 50%; border: 1px solid #aaa; transition: 0.3s;}
+    .g-dot.active, .g-dot:hover { background: var(--pastel-pink); border-color: var(--pastel-pink); box-shadow: 0 0 8px var(--pastel-pink);}
+
+    /* PANEL DERECHO */
+    .right-bg-panel { position: absolute; left: 520px; top: 100px; width: 480px; height: 440px; border-radius: 35px; z-index: 1; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
+    .right-content-wrapper { position: absolute; left: 630px; top: 100px; width: 340px; height: 440px; z-index: 3; display: flex; flex-direction: column; padding-top: 20px; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
+    .top-nav { display: flex; align-items: center; color: #888; font-size: 11px; margin-bottom: 10px; padding-right: 30px;}
+    .nav-tabs { display: flex; gap: 5px; margin-left: auto; margin-right: 15px; } 
+    .tab { padding: 4px 10px; border-radius: 10px; background: rgba(255,255,255,0.05); transition: 0.3s; }
+    .tab.active { background: #ffadd2; color: white; }
+    
+    .vertical-line { position: absolute; right: 15px; top: 50px; width: 2px; height: 160px; background: white; z-index: 4; pointer-events: none; opacity: 0.7;}
+    .vertical-line::after { content: ''; position: absolute; top: 40%; left: -4px; width: 10px; height: 10px; background: white; transform: rotate(45deg); }
+    
+    /* CONTENEDOR SIN SCROLL */
+    .scroll-viewport { flex: 1; padding-right: 30px; margin-right: 10px; overflow: visible; }
+
+    /* TEXTO DE BIENVENIDA LIMPIO */
+    .welcome-text-new {
+        text-align: right;
+        margin-top: 25px;
+        font-family: 'Dancing Script', cursive;
+        font-size: 38px;
+        color: white;
+        line-height: 1.1;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+    .welcome-text-new .espacio {
+        color: var(--pastel-pink);
+        font-weight: bold;
+        text-shadow: 0 0 15px rgba(255, 173, 210, 0.5);
+    }
+    .sub-welcome-text {
+        text-align: right;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: rgba(255,255,255,0.7);
+        letter-spacing: 5px;
+        margin-top: 6px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    /* ========================================= */
+    /* REPRODUCTOR TOTALMENTE LIBRE Y SIN MARCO  */
+    /* ========================================= */
+    .clean-radio {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end; /* Alineado a la derecha, igual que el texto */
+        margin-right: 25px;
+        margin-top: 10px;
+    }
+    
+    .clean-cover-wrap {
+        position: relative;
+        width: 170px; /* Tamaño de la imagen libre */
+        transition: transform 0.3s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .clean-cover-wrap:hover {
+        transform: scale(1.05);
+    }
+
+    /* Imagen completa sin recortes ni cuadrados */
+    .clean-cover-wrap img {
+        width: 250px;
+        height: auto;
+        object-fit: contain; /* Para que la imagen transparente no se corte en lo absoluto */
+        background: transparent;
+        border: none;
+        /* La sombra respeta la forma del PNG en lugar de hacer un cuadrado */
+        filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));
+    }
+
+    .clean-play-btn {
+        position: absolute;
+        bottom: 5px;
+        left: -10px; /* Flotando en la esquina de la imagen PNG */
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background-color: var(--pastel-pink);
+        cursor: pointer;
+        border: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.3s;
+        box-shadow: 0 5px 15px rgba(255, 173, 210, 0.5);
+    }
+    
+    .clean-play-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--pastel-pink); }
+    .clean-play-btn.playing { background-color: #fff; }
+    .clean-play-btn svg { fill: #000; width: 16px; height: 16px; transition: 0.2s; }
+
+    /* Textos debajo de la imagen */
+    .clean-title {
+        font-family: 'Anton', sans-serif;
+        font-size: 20px;
+        color: white;
+        margin-top: 10px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 250px;
+        text-align: right;
+    }
+    
+    .clean-artist {
+        font-size: 13px;
+        color: var(--pastel-pink);
+        font-weight: bold;
+        letter-spacing: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 250px;
+        text-align: right;
+        margin-top: 5px;
+    }
+
+    /* CARTA CENTRAL 3D */
+    .center-card-container { position: absolute; left: 390px; top: 130px; width: 260px; height: 390px; z-index: 15; perspective: 1200px; }
+    .center-card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1); }
+    .card-img-wrapper {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+        border-radius: 25px; background-color: transparent; 
+        border: 2px solid transparent; 
+        box-shadow: 0 15px 35px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.15);
+        transform-style: preserve-3d; transition: border-color 0.5s ease, box-shadow 0.5s ease;
+        overflow: hidden; transform: translateZ(10px);
+    }
+    .card-glare {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 25px; pointer-events: none;
+        background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, transparent 50%);
+        opacity: 0; transition: opacity 0.3s; z-index: 5;
+    }
+    .center-card-container:hover .card-glare { opacity: 1; }
+    .card-img-wrapper img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; border-radius: 25px; transform: translateZ(40px); transition: transform 0.3s ease; }
+    .center-card-container:hover .card-img-wrapper { border-color: var(--pastel-pink); animation: neonPulse 1.5s infinite alternate; }
+    @keyframes neonPulse { from { box-shadow: 0 0 10px var(--pastel-pink), inset 0 0 2px var(--pastel-pink); } to { box-shadow: 0 0 30px var(--pastel-pink), 0 0 40px rgba(255,173,210,0.4), inset 0 0 8px var(--pastel-pink); } }
+    .thin-cursive-love { font-family: 'Dancing Script', cursive; font-size: 45px; font-weight: 400; color: var(--pastel-pink); text-shadow: 2px 4px 10px rgba(0,0,0,0.5); pointer-events: none; display: block; transform: translateZ(80px); }
+    .card-bottom-text { position: absolute; bottom: 25px; width: 100%; text-align: center; line-height: 0.9; transform-style: preserve-3d; pointer-events: none; z-index: 10; }
+
+    /* TEXTO EN LA PARTE INFERIOR */
+    .bottom-quote { 
+        position: absolute; bottom: 25px; left: 0; right: 0; margin: auto; width: max-content; 
+        opacity: 0; font-family: 'Dancing Script', cursive; font-size: 42px; letter-spacing: 2px; 
+        color: white; text-align: center; z-index: 20; pointer-events: auto; transition: transform 0.3s ease; 
+        animation: floatInQuote 1.2s cubic-bezier(0.25, 1, 0.5, 1) 0.9s forwards, textGlow 1.5s ease-in-out 0.9s infinite alternate;
+    }
+    .bottom-quote:hover { transform: scale(1.05); }
+    @keyframes floatInQuote { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+    @keyframes textGlow { 0% { text-shadow: 0 0 5px #fff, 0 0 10px var(--pastel-pink), 0 0 15px var(--pastel-pink); } 100% { text-shadow: 0 0 10px #fff, 0 0 20px var(--pastel-pink), 0 0 40px var(--pastel-pink), 0 0 60px #fff; } }
+
+    /* MARCA DE AGUA */
+    .watermark { position: absolute; bottom: 70px; right: 60px; font-size: 10px; color: rgba(255, 255, 255, 0.15); text-decoration: none; font-family: 'Inter', sans-serif; letter-spacing: 1px; transition: all 0.3s ease; z-index: 10; pointer-events: auto; }
+    .watermark:hover { color: var(--pastel-pink); text-shadow: 0 0 8px var(--pastel-pink); opacity: 1; }
+
+    /* MODALES ADMIN */
+    #admin-btn { position: fixed; bottom: 15px; left: 15px; font-size: 18px; color: white; opacity: 0.05; transition: 0.3s; z-index: 99999; cursor: pointer; padding: 5px; }
+    #admin-btn:hover { opacity: 1; text-shadow: 0 0 10px var(--pastel-pink); }
+    .overlay-panel { position: fixed; top:0; left:0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 1000000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s ease; }
+    .overlay-panel.show { opacity: 1; }
+    .custom-modal { width: 90%; max-width: 500px; background: rgba(20,20,20,0.95); padding: 25px; border-radius: 15px; border: 1px solid var(--pastel-pink); display: flex; flex-direction: column; gap: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); color: white; font-family: 'Inter', sans-serif; transform: scale(0.9); transition: 0.3s ease;}
+    .overlay-panel.show .custom-modal { transform: scale(1); }
+    .custom-modal h2 { color: var(--pastel-pink); text-align: center; font-size: 20px; margin-bottom: 5px;}
+    .custom-modal label { font-size: 11px; color: var(--pastel-pink); margin-top: 5px; font-weight: bold;}
+    .custom-modal input, .custom-modal textarea { width: 100%; background: #111; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; font-family: 'Inter', sans-serif; outline: none; transition: 0.3s; font-size: 12px;}
+    .custom-modal input:focus, .custom-modal textarea:focus { border-color: var(--pastel-pink); box-shadow: 0 0 8px rgba(255,173,210,0.3);}
+    .admin-btns { display: flex; gap: 10px; margin-top: 15px; }
+    .admin-btns button { flex: 1; padding: 10px; background: var(--pastel-pink); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;}
+    .admin-btns button:hover { background: white; transform: translateY(-2px); }
+    .admin-btns button.cancel { background: #333; color: white; }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 1050px) {
+        body { align-items: flex-start; overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; }
+        .artboard { width: 100%; height: auto; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; gap: 30px; transform: none !important; }
+        .main-title, .gallery-container, .right-content-wrapper, .center-card-container, .watermark { position: relative !important; left: auto !important; top: auto !important; right: auto !important; bottom: auto !important; transform: none !important; }
+        .chibi-img, .right-bg-panel, .vertical-line { display: none; }
+        .main-title { order: 1; align-items: center; margin-bottom: 0; }
+        .title-dslade-small { padding-right: 0; }
+        .center-card-container { order: 2; margin: 10px 0; }
+        .gallery-container { order: 4; width: 100%; max-width: 350px; }
+        .right-content-wrapper { order: 5; width: 100%; max-width: 400px; height: auto; background-color: rgba(255, 192, 203, 0.15); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.1); border-radius: 25px; padding: 25px; margin-top: 10px; }
+        .scroll-viewport { padding-right: 0; margin-right: 0; }
+        
+        .welcome-text-new, .sub-welcome-text { text-align: center; }
+        .welcome-text-new { margin-top: 10px; }
+        
+        .clean-radio { align-items: center; margin-top: 30px;}
+        .clean-title, .clean-artist { text-align: center; }
+        .clean-play-btn { left: 0; right: 0; margin: 0 auto; bottom: -20px; }
+        
+        .bottom-quote { position: relative; bottom: auto; margin-top: 25px; order: 6; }
+        .watermark { order: 7; text-align: center; position: relative !important; margin-top: 20px; }
+    }
+</style>
+</head>
+<body>
+
+<div id="custom-cursor"></div>
+<video autoplay muted loop playsinline id="bg-video"><source src="video.mp4" type="video/mp4"></video>
+
+<div id="login-overlay" class="overlay-panel">
+    <div class="custom-modal" style="max-width: 350px; text-align:center;">
+        <h2>Acceso Secreto</h2>
+        <p id="login-msg" style="font-size: 12px; color: #888; margin-bottom: 15px;">Cargando seguridad...</p>
+        <input type="password" id="admin-pwd-input" placeholder="Contraseña..." style="text-align: center; font-size: 16px;">
+        <div class="admin-btns">
+            <button onclick="checkPassword()">Entrar</button>
+            <button class="cancel" onclick="closeLoginPanel()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="admin-overlay-panel" class="overlay-panel">
+    <div class="custom-modal">
+        <h2>🛠 Editor de Perfil</h2>
+        <label>Galería (1 link de imagen por línea):</label>
+        <textarea id="edit-gallery" style="min-height: 120px;"></textarea>
+        <div class="admin-btns">
+            <button onclick="saveAdminData()">Guardar y Actualizar</button>
+            <button class="cancel" onclick="closeAdminPanel()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="admin-btn" onclick="openLoginPanel()">⚙️</div>
+
+<div class="artboard">
+    
+    <div class="main-title anim-fade" style="animation-delay: 0.2s;">
+        <div class="title-row"><span class="title-nath">Jannys</span><span class="title-exclamation">!!</span></div>
+        <div class="title-dslade-small">426104757</div>
+    </div>
+    
+    <div class="chibi-img clickable anim-fade" style="animation-delay: 0.3s;"></div>
+    
+    <div class="gallery-container glass-panel anim-fade" style="animation-delay: 0.4s;">
+        <div class="gallery-title">GALLERY</div>
+        <div class="gallery-track">
+            <div class="gallery-scroll-viewport" id="gallery-viewport">
+                <div class="gallery-inner" id="gallery-inner"></div>
+            </div>
+            <div class="gallery-nav-dots" id="gallery-dots"></div>
+        </div>
+    </div>
+
+    <div class="right-bg-panel glass-panel anim-fade" id="right-bg" style="animation-delay: 0.6s;"></div>
+    <div class="right-content-wrapper anim-fade" id="right-panel-area" style="animation-delay: 0.6s;">
+        <div class="vertical-line"></div>
+        <div class="top-nav"><span class="clickable">&lt;</span><div class="nav-tabs"><span class="tab active clickable">profile x</span></div><span class="clickable">&gt;</span></div>
+        
+        <div class="scroll-viewport">
+            
+            <div class="welcome-text-new">
+                Hola bienvenid@<br>
+                <span class="espacio">a mi espacio</span>
+            </div>
+            <div class="sub-welcome-text">NACER SER CRECER Y RENACER</div>
+
+            <div id="stream1" class="clean-radio">
+                
+                <div class="clean-cover-wrap">
+                    <img id="radio-cover" src="https://i.postimg.cc/P525y46g/REPR.png" alt="Radio Cover">
+                    <button class="clean-play-btn pulse-glow clickable">
+                        <svg viewBox="0 0 24 24" style="margin-left:2px;"><path d="M8 5v14l11-7z"/></svg>
+                    </button>
+                </div>
+
+                
+                <div class="clean-artist">FREEDOM IN YOUR SOUL</div>
+
+            </div>
+
+        </div> 
+    </div>
+
+    <div class="center-card-container anim-fade" id="card-container" style="animation-delay: 0.8s;">
+        <div class="float-wrapper" id="float-wrap">
+            <div class="center-card" id="js-tilt-card">
+                <div class="card-img-wrapper">
+                    <img src="https://xatimg.com/image/uaZUF66FWTac.jpg" alt="jannys">
+                    <div class="card-glare" id="card-glare"></div>
+                </div>
+                <div class="card-bottom-text"><span class="thin-cursive-love">Jannys</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-quote">SER FELIZ ES MI VICIO</div>
+
+    <a href="https://xat.me/rayko" class="watermark clickable anim-fade" target="_blank" style="animation-delay: 1s;">Diseñado por Rayko | XatSpace</a>
+
+</div>
+
+<div id="photo-modal" onclick="closeModal()" style="display:none; position: fixed; inset:0; background:rgba(0,0,0,0.8); z-index:999999; justify-content:center; align-items:center;">
+    <img id="modal-img" src="" alt="Enlarged" onclick="event.stopPropagation()" style="max-width: 90%; max-height: 90%; border-radius: 20px; object-fit: contain;">
+</div>
+
+<script>
+    function fitToScreen() {
+        const artboard = document.querySelector('.artboard');
+        if (window.innerWidth <= 1050) { artboard.style.transform = `none`; return; }
+        const winW = window.innerWidth; const winH = window.innerHeight;
+        const scale = Math.min(winW / 1060, winH / 660); 
+        if(scale < 1) { artboard.style.transform = `scale(${scale})`; } else { artboard.style.transform = `scale(1)`; }
+    }
+    window.addEventListener('resize', fitToScreen);
+    fitToScreen(); 
+
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('keydown', function(e) {
+        if(document.getElementById('admin-overlay-panel').style.display !== 'flex' && document.getElementById('login-overlay').style.display !== 'flex') {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'U')) { e.preventDefault(); }
+        }
+    });
+
+    const customCursor = document.getElementById('custom-cursor');
+    document.addEventListener('mousemove', function(e) {
+        if(document.getElementById('admin-overlay-panel').style.display !== 'flex' && document.getElementById('login-overlay').style.display !== 'flex') {
+            customCursor.style.left = e.clientX + 'px'; customCursor.style.top = e.clientY + 'px';
+            if (Math.random() < 0.25) { 
+                const sparkle = document.createElement('div'); sparkle.className = 'sparkle';
+                sparkle.style.left = (e.clientX - 7 + (Math.random() * 10 - 5)) + 'px';
+                sparkle.style.top = (e.clientY - 7 + (Math.random() * 10 - 5)) + 'px';
+                document.body.appendChild(sparkle); setTimeout(() => sparkle.remove(), 900);
+            }
+        }
+    });
+
+    const defaultData = {
+        gallery: [
+            "https://xatimg.com/image/eCBERXHYLE9i.jpg", "https://xatimg.com/image/Dr2Kp2IzLlsd.jpg",
+            "https://xatimg.com/image/lmgXTlBuRW4x.jpg", "https://xatimg.com/image/uaZUF66FWTac.jpg",
+            "https://xatimg.com/image/BBohhwgx02dq.jpg", "https://xatimg.com/image/3mMaKNn0nwxf.jpg",
+            "https://xatimg.com/image/BBohhwgx02dq.jpg", "https://xatimg.com/image/3mMaKNn0nwxf.jpg"
+        ]
+    };
+
+    let currentData = JSON.parse(localStorage.getItem('loveProfileData_V35')) || defaultData;
+
+    function renderUI() {
+        let galleryHTML = ''; let dotsHTML = '';
+        currentData.gallery.forEach((url, i) => {
+            galleryHTML += `<div class="pill clickable" style="background-image: url('${url}');" onclick="openModal('${url}')"></div>`;
+            if(i % 4 === 0) { dotsHTML += `<div class="g-dot clickable ${i===0?'active':''}" onclick="scrollToPage(${Math.floor(i/4)})"></div>`; }
+        });
+        document.getElementById('gallery-inner').innerHTML = galleryHTML;
+        document.getElementById('gallery-dots').innerHTML = dotsHTML;
+        scrollToPage(0); 
+    }
+
+    let currentGalPage = 0;
+    window.scrollToPage = function(page) {
+        currentGalPage = page;
+        const inner = document.getElementById('gallery-inner');
+        inner.style.transform = `translateX(-${page * 228}px)`; 
+        const dots = document.querySelectorAll('.g-dot'); 
+        dots.forEach(d => d.classList.remove('active')); 
+        if(dots[page]) dots[page].classList.add('active'); 
+    }
+
+    const galViewport = document.getElementById('gallery-viewport');
+    let isGalScrolling = false;
+    galViewport.addEventListener('wheel', (e) => { 
+        e.preventDefault(); 
+        if(isGalScrolling) return;
+        isGalScrolling = true; setTimeout(() => isGalScrolling = false, 400); 
+        const totalPages = Math.ceil(currentData.gallery.length / 4);
+        if(e.deltaY > 0 && currentGalPage < totalPages - 1) { scrollToPage(currentGalPage + 1); } 
+        else if(e.deltaY < 0 && currentGalPage > 0) { scrollToPage(currentGalPage - 1); }
+    });
+
+    renderUI();
+
+    let storedHash = localStorage.getItem('adminHash_V35');
+    function openLoginPanel() {
+        const loginOverlay = document.getElementById('login-overlay');
+        loginOverlay.style.display = 'flex'; setTimeout(()=> loginOverlay.classList.add('show'), 10);
+        document.body.style.cursor = 'auto'; document.getElementById('custom-cursor').style.display = 'none';
+        document.getElementById('admin-pwd-input').value = '';
+        const msg = document.getElementById('login-msg');
+        if(!storedHash) { msg.innerText = "Crea una contraseña nueva (se encriptará)."; msg.style.color = "var(--pastel-pink)"; } 
+        else { msg.innerText = "Ingresa tu contraseña para editar."; msg.style.color = "#888"; }
+        document.getElementById('admin-pwd-input').focus();
+    }
+    function closeLoginPanel() {
+        const loginOverlay = document.getElementById('login-overlay');
+        loginOverlay.classList.remove('show'); setTimeout(()=> loginOverlay.style.display = 'none', 300);
+        document.body.style.cursor = 'none'; document.getElementById('custom-cursor').style.display = 'block';
+    }
+    async function hashPassword(password) {
+        const msgUint8 = new TextEncoder().encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    async function checkPassword() {
+        const pwd = document.getElementById('admin-pwd-input').value;
+        if(pwd.trim() === "") { alert("La contraseña no puede estar vacía."); return; }
+        const inputHash = await hashPassword(pwd);
+        if (!storedHash) {
+            storedHash = inputHash; localStorage.setItem('adminHash_V35', storedHash);
+            alert("¡Contraseña guardada y encriptada con éxito (SHA-256)!");
+            closeLoginPanel(); setTimeout(openAdminPanel, 300);
+        } else if (inputHash === storedHash) { closeLoginPanel(); setTimeout(openAdminPanel, 300); } 
+        else { alert("Contraseña incorrecta."); }
+    }
+    document.getElementById('admin-pwd-input').addEventListener('keypress', function (e) { if (e.key === 'Enter') checkPassword(); });
+
+    const adminOverlay = document.getElementById('admin-overlay-panel');
+    function openAdminPanel() {
+        document.getElementById('edit-gallery').value = currentData.gallery.join('\n');
+        adminOverlay.style.display = 'flex'; setTimeout(()=> adminOverlay.classList.add('show'), 10);
+        document.body.style.cursor = 'auto'; document.getElementById('custom-cursor').style.display = 'none';
+    }
+    function closeAdminPanel() {
+        adminOverlay.classList.remove('show'); setTimeout(()=> adminOverlay.style.display = 'none', 300);
+        document.body.style.cursor = 'none'; document.getElementById('custom-cursor').style.display = 'block';
+    }
+    function saveAdminData() {
+        const gLines = document.getElementById('edit-gallery').value.split('\n');
+        currentData.gallery = gLines.filter(l => l.trim()!=='').map(l => l.trim());
+        localStorage.setItem('loveProfileData_V35', JSON.stringify(currentData));
+        renderUI(); closeAdminPanel();
+    }
+
+    function openModal(imgUrl) { 
+        const modal = document.getElementById('photo-modal'); document.getElementById('modal-img').src = imgUrl; 
+        modal.style.display = 'flex'; setTimeout(() => modal.classList.add('show'), 10); 
+    }
+    function closeModal() { 
+        const modal = document.getElementById('photo-modal'); 
+        modal.classList.remove('show'); setTimeout(() => modal.style.display = 'none', 300); 
+    }
+
+    /* EFECTO 3D */
+    const cardContainer = document.getElementById('card-container');
+    const floatWrap = document.getElementById('float-wrap');
+    const card = document.getElementById('js-tilt-card');
+    const cardGlare = document.getElementById('card-glare');
+    const rightPanel = document.getElementById('right-panel-area');
+    const rightBg = document.getElementById('right-bg');
+
+    rightPanel.addEventListener('mouseenter', () => { 
+        if(window.innerWidth > 1050) { cardContainer.style.transform = 'translateX(-90px)'; rightBg.style.transform = 'translateX(-40px)'; rightPanel.style.transform = 'translateX(-40px)'; }
+    });
+    rightPanel.addEventListener('mouseleave', () => { 
+        if(window.innerWidth > 1050) { cardContainer.style.transform = 'translateX(0)'; rightBg.style.transform = 'translateX(0)'; rightPanel.style.transform = 'translateX(0)'; }
+    });
+    cardContainer.addEventListener('mouseenter', () => {
+        if(window.innerWidth > 1050) { floatWrap.style.animationPlayState = 'paused'; card.style.transition = `transform 0.1s ease-out`; }
+    });
+    cardContainer.addEventListener('mousemove', (e) => {
+        if(window.innerWidth > 1050) {
+            const rect = cardContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+            const centerX = rect.width / 2; const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -20; const rotateY = ((x - centerX) / centerX) * 20;  
+            card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.1, 1.1, 1.1)`;
+            const glareX = (x / rect.width) * 100; const glareY = (y / rect.height) * 100;
+            cardGlare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.2) 0%, transparent 60%)`;
+        }
+    });
+    cardContainer.addEventListener('mouseleave', () => {
+        if(window.innerWidth > 1050) {
+            card.style.transform = `rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+            card.style.transition = `transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)`;
+            cardGlare.style.background = `radial-gradient(circle at 50% 50%, rgba(255,255,255,0.2) 0%, transparent 50%)`;
+            setTimeout(() => floatWrap.style.animationPlayState = 'running', 500); 
+        }
+    });
+
+    const quoteText = document.querySelector('.bottom-quote');
+    if(quoteText) {
+        quoteText.addEventListener('mousemove', function(e) {
+            if (Math.random() < 0.6) { 
+                const sparkle = document.createElement('div'); sparkle.className = 'sparkle';
+                sparkle.style.left = (e.clientX - 10 + (Math.random() * 30 - 15)) + 'px';
+                sparkle.style.top = (e.clientY - 10 + (Math.random() * 30 - 15)) + 'px';
+                const randomScale = Math.random() * 0.5 + 0.8; sparkle.style.transform = `scale(${randomScale})`;
+                document.body.appendChild(sparkle); setTimeout(() => sparkle.remove(), 900);
+            }
+        });
+    }
+
+    /* ================= NUEVO REPRODUCTOR FLOTANTE RADIO ================= */
+    (function($){
+        $.fn.icast = function(options){
+            let settings = $.extend({ URL: "", volume: 0.6 }, options);
+            let audio = new Audio(settings.URL + "/stream?icy=http");
+            audio.volume = settings.volume;
+            
+            let $player = $(this);
+            let $btn = $player.find('.clean-play-btn');
+            let $title = $player.find('.clean-title');
+            let $artist = $player.find('.clean-artist');
+            let $cover = $player.find('#radio-cover');
+
+            $btn.on('click', function(){
+                if(audio.paused) { 
+                    audio.play(); 
+                    // Cambia a ícono de Pause
+                    $btn.addClass('playing').html('<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'); 
+                    
+                    // FUERZA A BUSCAR LA INFORMACIÓN EXACTAMENTE AL DARLE PLAY
+                    updateStats();
+                } else { 
+                    audio.pause(); 
+                    // Cambia a ícono de Play
+                    $btn.removeClass('playing').html('<svg viewBox="0 0 24 24" style="margin-left:2px;"><path d="M8 5v14l11-7z"/></svg>'); 
+                }
+            });
+
+            function updateStats() {
+                // Hacemos la consulta al servidor de la radio
+                $.ajax({ 
+                    url: settings.URL + "/stats?sid=1&json=1&callback=?", 
+                    dataType: 'jsonp', 
+                    success: function(res){
+                        if(res && res.songtitle) {
+                            let fullTitle = res.songtitle;
+                            let artist = "FREEDOM_IN_YOUR_SOUL";
+                            let title = fullTitle;
+
+                            // Si tiene un guion, separamos Artista y Título
+                            if(fullTitle.includes('-')) {
+                                let parts = fullTitle.split('-');
+                                artist = parts[0].trim();
+                                title = parts.slice(1).join('-').trim();
+                            }
+                            
+                            $artist.text(artist);
+                            $title.text(title);
+                            fetchCover(artist, title);
+                            
+                        } else if (res && res.servertitle) {
+                            // En caso de que el DJ no ponga nombre de la pista, 
+                            // muestra el nombre del Servidor o DJ.
+                            $title.text(res.servertitle);
+                            $artist.text("Transmisión en Vivo");
+                        }
+                    }
+                });
+            }
+
+            function fetchCover(artist, title) {
+                // Evitamos buscar portadas genéricas
+                if(artist === "- FREEDOM_IN_YOUR_SOUL" || artist === "Transmisión en Vivo") return;
+                
+                let term = encodeURIComponent(artist + " " + title);
+                $.ajax({ 
+                    url: "https://itunes.apple.com/search?term="+term+"&limit=1", 
+                    dataType: 'jsonp', 
+                    success: function(d){
+                        // Busca la carátula real en iTunes. Si no hay, mantiene tu imagen base
+                        let c = d.results.length ? d.results[0].artworkUrl100.replace('100x100','400x400') : "https://i.postimg.cc/P525y46g/REPR.png";
+                        $cover.attr('src', c);
+                    }
+                });
+            }
+
+            // Actualiza la canción automáticamente cada 10 segundos
+            setInterval(updateStats, 10000); 
+            // Carga la información al abrir la página por primera vez
+            updateStats();
+        };
+    })(jQuery);
+
+    $("#stream1").icast({ URL: "https://radio.technoplayerserver.com/8048" });
+
+</script>
+
+</body>
+</html>
